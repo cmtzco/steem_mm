@@ -10,14 +10,14 @@ import time
 logging.basicConfig(filename='gekko.log',level=logging.INFO)
 RUNNING = True
 while RUNNING:
-    try:
-        c.lotSize = random.uniform(0.75, 1.25)
+    try:        
         p = Polo(c.PoloKey, c.PoloSecret)
         orders = p.getOpenOrders()
         # for order in orders:
         #     print order['orderNumber']
 
         while RUNNING:
+            c.lotSize = random.uniform(0.75, 1.25)
             ticker = p.getTicker()
             btc = p.getCoinBalance('BTC')
             steem = p.getCoinBalance('STEEM')
