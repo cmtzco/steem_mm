@@ -2,6 +2,7 @@ from gekko import Polo
 import config as c
 import urllib2
 import logging
+import random
 import time
 #0.04985619 BTC
 
@@ -10,6 +11,7 @@ logging.basicConfig(filename='gekko.log',level=logging.INFO)
 RUNNING = True
 while RUNNING:
     try:
+        c.lotSize = random.uniform(0.75, 1.25)
         p = Polo(c.PoloKey, c.PoloSecret)
         orders = p.getOpenOrders()
         # for order in orders:
@@ -39,20 +41,20 @@ while RUNNING:
                                                                                                                    steem_balance,
                                                                                                                    p.getNumOpenOrders(orders)))
 
-                    if steem > c.lotSize:
-                        ask = p.getAsk(ticker)
-                        sell = p.makeSellOrder(ticker)
-                        btc_balance = p.getCoinBalance('BTC')
-                        steem_balance = p.getCoinBalance('STEEM')
-                        orders = p.getOpenOrders()
-                        print "[INFO][POLO][MM][SELL] ORDERNUM: {}, BALANCES: {} BTC, {} STEEM, TOTAL OPEN ORDERS: {}".format(sell['orderNumber'],
-                                                                                                                        btc_balance,
-                                                                                                                        steem_balance,
-                                                                                                                        p.getNumOpenOrders(orders))
-                        logging.info("[INFO][POLO][MM][SELL] ORDERNUM: {}, BALANCES: {} BTC, {} STEEM, TOTAL OPEN ORDERS: {}".format(sell['orderNumber'],
-                                                                                                                        btc_balance,
-                                                                                                                        steem_balance,
-                                                                                                                        p.getNumOpenOrders(orders)))
+                elif steem > c.lotSize:
+                    ask = p.getAsk(ticker)
+                    sell = p.makeSellOrder(ticker)
+                    btc_balance = p.getCoinBalance('BTC')
+                    steem_balance = p.getCoinBalance('STEEM')
+                    orders = p.getOpenOrders()
+                    print "[INFO][POLO][MM][SELL] ORDERNUM: {}, BALANCES: {} BTC, {} STEEM, TOTAL OPEN ORDERS: {}".format(sell['orderNumber'],
+                                                                                                                    btc_balance,
+                                                                                                                    steem_balance,
+                                                                                                                    p.getNumOpenOrders(orders))
+                    logging.info("[INFO][POLO][MM][SELL] ORDERNUM: {}, BALANCES: {} BTC, {} STEEM, TOTAL OPEN ORDERS: {}".format(sell['orderNumber'],
+                                                                                                                    btc_balance,
+                                                                                                                    steem_balance,
+                                                                                                                    p.getNumOpenOrders(orders)))
                 else:
                     highscore = 0
                     ids = list()
@@ -77,7 +79,23 @@ while RUNNING:
                 logging.error("[ERROR][POLO][MM][WHILE] {}".format(e))
                 time.sleep(20)
                 continue
-            except KeyError:
+            except KeyError as e:
+                print "[ERROR][POLO][MM][WHILE][KEY] {}".format(e)
+                logging.error("[ERROR][POLO][MM][WHILE][KEY] {}".format(e))
+                print "[ERROR][POLO][MM][WHILE][ORDERLIMIT]We've hit an order limit, waiting 20s to see if any orders fill{}".format(
+                    e)
+                logging.error(
+                    "[ERROR][POLO][MM][WHILE][ORDERLIMIT]We've hit an order limit, waiting 20s to see if any orders fill {}".format(
+                        e))
+                time.sleep(20)
+                pass
+            except ValueError as e:
+                print "[ERROR][POLO][MM][WHILE][VALUE] {}".format(e)
+                logging.error("[ERROR][POLO][MM][WHILE][VALUE] {}".format(e))
+                pass
+            except TypeError as e:
+                print "[ERROR][POLO][MM][WHILE][TYPE] {}".format(e)
+                logging.error("[ERROR][POLO][MM][WHILE][TYPE] {}".format(e))
                 pass
     except urllib2.HTTPError as e:
         print "[ERROR][POLO][MM][MAIN] {}".format(e)
